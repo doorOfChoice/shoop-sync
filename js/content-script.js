@@ -71,20 +71,19 @@
     let smallMain = $("<div class='sync-small-main-panel'></div>").hide();
     smallMain.mousedown(dragFunction(smallMain));
 
-    //主面板
-    let main = $("<div class='sync-main-panel'></div>");
     let menu = $("<div class='sync-main-menu'></div>");
-    main.append(menu);
+    //主面板
+    let main = $("<div class='sync-main-panel'></div>").append(menu);
     menu.mousedown(dragFunction(main));
 
     smallMain.dblclick(function (event) {
-        main.show(1000);
-        smallMain.hide(1000);
+        main.show(500);
+        smallMain.hide(500);
         syncCoord(main, smallMain);
     });
     menu.dblclick(function (event) {
-        main.hide(1000);
-        smallMain.show(1000);
+        main.hide(500);
+        smallMain.show(500);
         syncCoord(smallMain, main);
     });
 
@@ -120,9 +119,18 @@
 
     leftPanel.append(chat).append(input);
 
-    main.append(leftPanel).append(rightPanel);
+    //视频控制面板
+    let video = $("<div class='sync-video-panel'></div>");
+    let playBtn = $("<button>play</button>");
+    let pauseBtn = $("<button>pause</button>");
+    let syncBtn = $("<button>sync</button>");
+    video.append(playBtn).append(pauseBtn).append(syncBtn);
+
+
+    main.append(leftPanel).append(rightPanel).append(video);
     body.append(main);
     body.append(smallMain);
+
 
     //====================================================
     //|                  注册peer事件                     |
@@ -133,16 +141,29 @@
     }
 
     let sync = new Sync();
+    let vc = new VideoController();
 
     sync.setPeerOpenFunc(function (id) {
         chat.text("your name is: " + id);
     });
+
+    sync.setPeerErrorFunc(function (err) {
+        chrome.notifications.create(null, {
+            type: 'basic',
+            iconUrl: 'icon.png',
+            title: '错误信息',
+            message: err
+        });
+    });
+
     sync.setConnDataFunc(function (conn, data) {
         chat.append(generateText(data));
     });
+
     sync.setConnOpenFunc(function (conn) {
         console.log(conn);
     });
+
     sync.setConnsChanged(function (conns) {
         console.log(conns);
         friends.html("");
@@ -153,15 +174,39 @@
             friends.append(dom);
         }
     });
-    sync.setConnOperation(function (opt) {
 
+    sync.setConnOperation(function (opt) {
+        if(opt.op === 'play') {
+            vc.play();
+        }else if(opt.op === 'pause') {
+            vc.pause();
+        }else if(opt.op === 'setTime') {
+            vc.setTimes(opt.times);
+        }
     });
+
     inputBtn.click(function (event) {
         sync.sendData(inputText.val());
         chat.append(generateText(inputText.val()));
     });
+
     connBtn.click(function (event) {
         sync.connect(connText.val());
     });
+
+    playBtn.click(function (event) {
+        vc.play();
+        sync.sendOperation(vc.newData("play"));
+    });
+
+    pauseBtn.click(function (event) {
+        vc.pause();
+        sync.sendOperation(vc.newData("pause"));
+    });
+
+    syncBtn.click(function (event) {
+        sync.sendOperation(vc.newData("setTime"));
+    });
+
     sync.init();
 })();
