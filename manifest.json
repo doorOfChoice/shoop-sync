@@ -1,0 +1,45 @@
+{
+    "name": "shoop-sync",
+    "manifest_version": 2,
+    "version": "1.0.0",
+    "description": "sync your life",
+    "icons" : {         
+      "16"  : "icon.png",
+      "48"  : "icon.png",
+      "128" : "icon.png"
+    },
+  "browser_action": {
+      "default_title": "shoop",
+      "default_icon" : "icon.png",
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [    
+      {                   
+        "matches": [
+          "<all_urls>"
+        ],
+        "css": [
+          "css/custom.css"
+        ],
+        "js": [
+          "vendor/jquery.min.js",
+          "vendor/peer.min.js",
+          "js/shoop-sync.js",
+          "js/content-script.js"
+        ],
+        "all_frames": false,
+        "run_at": "document_end"
+      }
+    ],
+    "background" : {
+      "scripts" : ["js/background.js"]
+    },
+    "permissions": [
+      "contextMenus",  
+      "tabs",
+      "storage",
+      "notifications",
+      "webRequest"
+    ],
+    "omnibox" : {"keyword" : "dev"}
+  }
