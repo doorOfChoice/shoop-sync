@@ -18,7 +18,7 @@
 .sync-main-panel {
     position: fixed;
     right: 0;
-    top: 50%;
+    top: 0;
     width: 520px;
     height: 460px;
     border: 1px solid;
@@ -32,7 +32,7 @@
 .sync-main-menu {
     width: 100%;
     height: 24px;
-    background-color: red;
+    background-color: #ff5f19;
 }
 .sync-friends-panel {
     width: 200px;
