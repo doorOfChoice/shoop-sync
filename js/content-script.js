@@ -71,9 +71,9 @@
     let smallMain = $("<div class='sync-small-main-panel'></div>").hide();
     smallMain.mousedown(dragFunction(smallMain));
 
-    let menu = $("<div class='sync-main-menu'></div>");
+    let menu = $("<div class='sync-main-menu'><b>SHOOP</b></div>");
     //主面板
-    let main = $("<div class='sync-main-panel'></div>").append(menu);
+    let main = $("<div class='sync-main-panel'></div>").append(menu).hide();
     menu.mousedown(dragFunction(main));
 
     smallMain.dblclick(function (event) {
@@ -121,9 +121,9 @@
 
     //视频控制面板
     let video = $("<div class='sync-video-panel'></div>");
-    let playBtn = $("<button>play</button>");
-    let pauseBtn = $("<button>pause</button>");
-    let syncBtn = $("<button>sync</button>");
+    let playBtn = $("<button>一起播放</button>");
+    let pauseBtn = $("<button>一起暂停</button>");
+    let syncBtn = $("<button>同步对方</button>");
     video.append(playBtn).append(pauseBtn).append(syncBtn);
 
 
@@ -136,8 +136,36 @@
     //|                  注册peer事件                     |
     //====================================================
 
-    function generateText(content) {
-        return $("<p></p>").text(new Date() + '\n' + content);
+    function buildP(text) {
+        return $("<p>").text(text);
+    }
+
+    function buildTable(headers, data) {
+        console.log("warnning");
+        console.log(data);
+        let table = $('<table>');
+        let thead = $('<tr>');
+        for(let i = 0; i < headers.length; i++) {
+            thead.append($('<th>').text(headers[i]));
+        }
+        table.append(thead);
+        for(let i = 0; i < data.length; i++) {
+            let tbody = $('<tr>').append($('<td>').text(data[i]));
+            table.append(tbody);
+
+        }
+
+        return table;
+    }
+
+    function generateText(peer, content) {
+        let div = $("<div></div>");
+        div.append(buildP(peer + " 说道:").css('color', 'blue')).append(buildP(content));
+        return div;
+    }
+
+    function dateFormat(date) {
+        return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay() + ' ' + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds();
     }
 
     let sync = new Sync();
@@ -157,7 +185,7 @@
     });
 
     sync.setConnDataFunc(function (conn, data) {
-        chat.append(generateText(data));
+        chat.append(generateText(data.peer, data.msg));
     });
 
     sync.setConnOpenFunc(function (conn) {
@@ -167,12 +195,8 @@
     sync.setConnsChanged(function (conns) {
         console.log(conns);
         friends.html("");
-        friends.append($('<p></p>').text("Your ID: " + sync.peerId()));
-        for(let i = 0; i < conns.length; i++) {
-            let conn = conns[i];
-            let dom = $("<p></p>").text(conn.peer);
-            friends.append(dom);
-        }
+        conns.unshift(sync.peerId());
+        friends.append(buildTable(['在线用户(第一个是自己)'], conns));
     });
 
     sync.setConnOperation(function (opt) {
@@ -187,7 +211,7 @@
 
     inputBtn.click(function (event) {
         sync.sendData(inputText.val());
-        chat.append(generateText(inputText.val()));
+        chat.append(generateText(sync.peerId(), inputText.val()));
     });
 
     connBtn.click(function (event) {
@@ -209,4 +233,11 @@
     });
 
     sync.init();
+
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
+    {
+        console.log(request);
+        if(request.cmd === 'show') main.show();
+        sendResponse('我收到了你的消息！');
+    });
 })();

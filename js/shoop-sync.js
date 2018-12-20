@@ -167,7 +167,7 @@ function Sync() {
 
         peer.on('open', id => {
             status = 1;
-            connsChanged(conns);
+            connsChanged(peersGot());
             peerOpenFunc(id);
         });
         peer.on('connection', registerConn);
@@ -188,6 +188,7 @@ function Sync() {
     function send(content) {
         for(let i = 0; i < conns.length; i++) {
             let conn = conns[i];
+            content.peer = peer.id;
             conn.send(content)
         }
     }
@@ -211,15 +212,15 @@ function Sync() {
         conn.on('open', () => {
             conn.send({
                 type: "SYNC",
-                msg: combineConns(conns)
+                msg: peersGot(conns)
             });
             conns.push(conn);
-            connsChanged(conns);
+            connsChanged(peersGot());
         });
 
         conn.on('data', data => {
             if(data.type === 'DATA') {
-                connDataFunc(conn, data.msg);
+                connDataFunc(conn, data);
             }else if(data.type === 'SYNC') {
                 let peers = data.msg;
                 for(let i = 0; i < peers.length; i++) {
@@ -232,19 +233,12 @@ function Sync() {
 
         conn.on('close', () => {
             if(deleteConn(conn) !== false) {
-                connsChanged(conns);
+                connsChanged(peersGot());
                 connCloseFunc(conn);
             }
         });
     }
 
-    function combineConns(conns) {
-        let peers = [];
-        for(let i = 0; i < conns.length; i++) {
-            peers.push(conns[i].peer);
-        }
-        return peers;
-    }
 
     function deleteConn(conn) {
         for(let i = 0; i < conns.length; i++) {
@@ -265,5 +259,13 @@ function Sync() {
                 return true;
         }
         return false;
+    }
+
+    function peersGot() {
+        let peers = [];
+        for(let i = 0; i < conns.length; i++) {
+            peers.push(conns[i].peer);
+        }
+        return peers;
     }
 }
