@@ -134,6 +134,8 @@ function Sync() {
     this.init = () => {
         peer = new Peer({
             debug: 3,
+            secure: true,
+            port: 443,
             config: {
                 // free servers from https://gist.github.com/yetithefoot/7592580
                 iceServers: [
