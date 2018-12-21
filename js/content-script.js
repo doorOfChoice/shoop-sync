@@ -96,7 +96,7 @@
     //连接面板
     let conn = $("<div class='sync-conn-panel'></div>");
     let connText = $("<input type='text' class='sync-conn-panel-text' placeholder='对方的peer id'/>");
-    let connBtn = $("<button class='sync-conn-panel-btn'>连接</button>");
+    let connBtn = $("<button class='sync-conn-panel-btn green'>连接</button>");
     conn.append(connText).append(connBtn);
 
     rightPanel.append(friends).append(conn);
@@ -112,16 +112,17 @@
     //输入面板
     let input = $("<div class='sync-input-panel'></div>");
     let inputText = $("<input type='text' class='sync-input-panel-text' placeholder='输入发送的内容'/>");
-    let inputBtn = $("<button class='sync-input-panel-btn'>发送</button>");
-    input.append(inputText).append(inputBtn);
+    let inputBtn = $("<button class='sync-input-panel-btn blue'>发送</button>");
+    let clearBtn = $("<button class='sync-input-panel-btn blue'>清空</button>");
+    input.append(inputText).append(inputBtn).append(clearBtn);
 
     leftPanel.append(chat).append(input);
 
     //视频控制面板
     let video = $("<div class='sync-video-panel'></div>");
-    let playBtn = $("<button>一起播放</button>");
-    let pauseBtn = $("<button>一起暂停</button>");
-    let syncBtn = $("<button>同步对方</button>");
+    let playBtn = $("<button class='red'>一起播放</button>");
+    let pauseBtn = $("<button class='red'>一起暂停</button>");
+    let syncBtn = $("<button class='red'>同步对方</button>");
     video.append(playBtn).append(pauseBtn).append(syncBtn);
 
 
@@ -238,6 +239,10 @@
 
         syncBtn.click(function (event) {
             sync.sendOperation(vc.newData("setTime"));
+        });
+
+        clearBtn.click(function (event) {
+           chat.html('');
         });
 
         sync.init();
