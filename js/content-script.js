@@ -60,8 +60,6 @@
      * @param dom2
      */
     function syncCoord(dom1, dom2) {
-        console.log(dom1.offset());
-        console.log(dom2.offset());
         dom1.offset(dom2.offset());
     }
 
@@ -135,109 +133,126 @@
     //====================================================
     //|                  注册peer事件                     |
     //====================================================
-
-    function buildP(text) {
-        return $("<p>").text(text);
-    }
-
-    function buildTable(headers, data) {
-        console.log("warnning");
-        console.log(data);
-        let table = $('<table>');
-        let thead = $('<tr>');
-        for(let i = 0; i < headers.length; i++) {
-            thead.append($('<th>').text(headers[i]));
-        }
-        table.append(thead);
-        for(let i = 0; i < data.length; i++) {
-            let tbody = $('<tr>').append($('<td>').text(data[i]));
-            table.append(tbody);
-
+    (function () {
+        function buildP(text) {
+            return $("<p>").text(text);
         }
 
-        return table;
-    }
+        function buildTable(headers, data) {
+            console.log("warnning");
+            console.log(data);
+            let table = $('<table>');
+            let thead = $('<tr>');
+            for(let i = 0; i < headers.length; i++) {
+                thead.append($('<th>').text(headers[i]));
+            }
+            table.append(thead);
+            for(let i = 0; i < data.length; i++) {
+                let tbody = $('<tr>').append($('<td>').text(data[i]));
+                table.append(tbody);
 
-    function generateText(peer, content) {
-        let div = $("<div></div>");
-        div.append(buildP(peer + " 说道:").css('color', 'blue')).append(buildP(content));
-        return div;
-    }
+            }
 
-    function dateFormat(date) {
-        return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay() + ' ' + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds();
-    }
+            return table;
+        }
 
-    let sync = new Sync();
-    let vc = new VideoController();
+        function generateText(peer, content) {
+            let div = $("<div></div>");
+            div.append(buildP(peer + " 说道:").css('color', 'blue')).append(buildP(content));
+            return div;
+        }
 
-    sync.setPeerOpenFunc(function (id) {
-        chat.text("your name is: " + id);
-    });
+        function dateFormat(date) {
+            return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay() + ' ' + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds();
+        }
 
-    sync.setPeerErrorFunc(function (err) {
-        chrome.notifications.create(null, {
-            type: 'basic',
-            iconUrl: 'icon.png',
-            title: '错误信息',
-            message: err
+        function chromeAlert(title, msg) {
+            chrome.runtime.sendMessage({
+                title: title,
+                message: msg
+            }, rep => {});
+        }
+
+        let sync = new Sync();
+        let vc = new VideoController();
+
+        sync.setPeerOpenFunc(function (id) {
+            chat.text("your name is: " + id);
         });
-    });
 
-    sync.setConnDataFunc(function (conn, data) {
-        chat.append(generateText(data.peer, data.msg));
-    });
+        sync.setPeerErrorFunc(function (err) {
+            chromeAlert("连接失败", '失败原因: ' + err.type);
+        });
 
-    sync.setConnOpenFunc(function (conn) {
-        console.log(conn);
-    });
+        sync.setPeerConnFunc(function (conn) {
+            chromeAlert('新的连接', conn.peer + '加入了你的房间');
+        });
 
-    sync.setConnsChanged(function (conns) {
-        console.log(conns);
-        friends.html("");
-        conns.unshift(sync.peerId());
-        friends.append(buildTable(['在线用户(第一个是自己)'], conns));
-    });
+        sync.setConnDataFunc(function (conn, data) {
+            chat.append(generateText(data.peer, data.msg));
+        });
 
-    sync.setConnOperation(function (opt) {
-        if(opt.op === 'play') {
+        sync.setConnOpenFunc(function (conn) {
+            chromeAlert('连接状况', '和' + conn.peer + '连接成功');
+        });
+
+        sync.setConnCloseFunc(function (conn) {
+            chromeAlert('连接状况', conn.peer + '退出了你的房间');
+        });
+
+        sync.setConnsChanged(function (conns) {
+            console.log(conns);
+            friends.html("");
+            conns.unshift(sync.peerId());
+            friends.append(buildTable(['在线用户(第一个是自己)'], conns));
+        });
+
+        sync.setConnOperation(function (opt) {
+            if(opt.op === 'play') {
+                vc.play();
+            }else if(opt.op === 'pause') {
+                vc.pause();
+            }else if(opt.op === 'setTime') {
+                vc.setTimes(opt.times);
+            }
+        });
+
+        inputBtn.click(function (event) {
+            sync.sendData(inputText.val());
+            chat.append(generateText(sync.peerId(), inputText.val()));
+        });
+
+        connBtn.click(function (event) {
+            sync.connect(connText.val());
+        });
+
+        playBtn.click(function (event) {
             vc.play();
-        }else if(opt.op === 'pause') {
+            sync.sendOperation(vc.newData("play"));
+        });
+
+        pauseBtn.click(function (event) {
             vc.pause();
-        }else if(opt.op === 'setTime') {
-            vc.setTimes(opt.times);
-        }
-    });
+            sync.sendOperation(vc.newData("pause"));
+        });
 
-    inputBtn.click(function (event) {
-        sync.sendData(inputText.val());
-        chat.append(generateText(sync.peerId(), inputText.val()));
-    });
+        syncBtn.click(function (event) {
+            sync.sendOperation(vc.newData("setTime"));
+        });
 
-    connBtn.click(function (event) {
-        sync.connect(connText.val());
-    });
+        sync.init();
 
-    playBtn.click(function (event) {
-        vc.play();
-        sync.sendOperation(vc.newData("play"));
-    });
+        chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
+        {
+            if(request.cmd === 'show') {
+                if(main.is(':visible') || smallMain.is(':visible')) {
+                    main.hide();
+                    smallMain.hide();
+                }else {
+                    main.show();
+                }
+            }
+        });
+    })();
 
-    pauseBtn.click(function (event) {
-        vc.pause();
-        sync.sendOperation(vc.newData("pause"));
-    });
-
-    syncBtn.click(function (event) {
-        sync.sendOperation(vc.newData("setTime"));
-    });
-
-    sync.init();
-
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
-    {
-        console.log(request);
-        if(request.cmd === 'show') main.show();
-        sendResponse('我收到了你的消息！');
-    });
 })();

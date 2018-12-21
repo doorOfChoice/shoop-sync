@@ -9,6 +9,16 @@ function sendMessageToContentScript(message, callback)
     });
 }
 
+chrome.runtime.onMessage.addListener(function (req, sender, sRep) {
+    console.log(req);
+    chrome.notifications.create(null, {
+        type: 'basic',
+        iconUrl: 'icon.png',
+        title: req.title,
+        message: req.message
+    });
+});
+
 chrome.browserAction.onClicked.addListener(function () {
     sendMessageToContentScript({
         cmd: "show"

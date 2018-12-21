@@ -68,11 +68,15 @@ function Sync() {
      */
     let peerErrorFunc = err => {};
     /**
+     * 有新的连接建立
+     * @param conn
+     */
+    let peerConnFunc = conn => {};
+    /**
      * 连接成功建立
      * @param conn
      */
     let connOpenFunc = conn => {};
-
     /**
      * 链接断开的时候
      * @param conn
@@ -105,6 +109,10 @@ function Sync() {
 
     this.setPeerErrorFunc = function(func){
         peerErrorFunc = func;
+    };
+
+    this.setPeerConnFunc = function (func) {
+        peerConnFunc = func;
     };
 
     this.setConnOpenFunc = function (func) {
@@ -172,7 +180,10 @@ function Sync() {
             connsChanged(peersGot());
             peerOpenFunc(id);
         });
-        peer.on('connection', registerConn);
+        peer.on('connection', conn => {
+            registerConn(conn);
+            peerConnFunc(conn);
+        });
     };
 
     this.connect = connect;
