@@ -7,6 +7,8 @@ function VideoController() {
 
     this.newData = newData;
 
+    this.shiftTime = shiftTime;
+
     function play() {
         let video = $("video");
         for(let i = 0; i < video.length; i++)
@@ -20,27 +22,33 @@ function VideoController() {
             video[i].pause();
     }
 
+    function shiftTime(shift = 0) {
+        let video = $("video");
+        for(let i = 0; i < video.length; i++)
+            video[i].currentTime += shift;
+    }
+
     function setTimes(times) {
         let video = $("video");
         for(let i = 0; i < video.length && i < times.length; i++)
             video[i].currentTime = times[i];
     }
 
-    function getTimes() {
+    function getTimes(shift = 0) {
         let video = $("video");
         let times = [];
         for(let i = 0; i < video.length; i++)
-            times.push(video[i].currentTime);
+            times.push(video[i].currentTime + shift);
         return times;
     }
 
-    function newData(op) {
+    function newData(op, shift = 0) {
         let data = {
             op: op,
             times: []
         };
         if(op === 'setTime') {
-            data.times = getTimes();
+            data.times = getTimes(shift);
         }
         return data
     }

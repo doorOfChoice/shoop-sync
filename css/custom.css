@@ -2,6 +2,7 @@
     display: inline-block;
     padding: 0;
     margin-right: 5px;
+    height: auto;
 }
 
 .sync-small-main-panel {
@@ -10,7 +11,7 @@
     top: 50%;
     width: 32px;
     height: 32px;
-    background: black url(https://i.loli.net/2018/12/20/5c1b312a60d38.png) no-repeat;
+    background: rgba(0, 0, 0, 0.8) url(https://i.loli.net/2018/12/20/5c1b312a60d38.png) no-repeat;
     background-size: cover;
     z-index: 9999;
 }
@@ -25,7 +26,7 @@
     border: 1px solid;
     z-index: 9999;
     font-size: 14px;
-    background-color: #CCCCCC;
+    background-color: rgba(255, 255, 255, 0.95);
     word-break: break-word;
     text-align: left;
     color: black;
@@ -141,24 +142,21 @@
 .sync-main-panel button.blue:active{
     background: #269CE9;
 }
-.sync-chat-panel {
-    background-color: #8080800f;
+.sync-main-panel input[type="text"] {
+    border: 1px solid #E0E0E0;
+    border-radius: 5px;
 }
 
 .sync-main-menu {
-    width: 100%;
     height: 24px;
     background-color: #333333;
 }
 .sync-main-menu{color: white;}
 .sync-friends-panel {
-    width: 200px;
     height: 340px;
 }
-.sync-conn-panel {
-    width: 200px;
-    height: 40px;
-}
+
+.sync-conn-panel {height: auto;}
 .sync-conn-panel-text {
     width: 100%;
     height: 80%;
@@ -167,23 +165,34 @@
     width: 100%;
     height: 80%;
 }
+
 .sync-chat-panel {
     overflow-y: auto;
-    width: 300px;
     height: 340px;
+    border-right: 1px solid #E0E0E0;
 }
+
 .sync-input-panel {
-    height: 40px;
-    width: 300px;
+    height: auto;
 }
 .sync-input-panel-text {
-    width: 100%;
-    height: 80%;
+    height: 100%;
 }
 .sync-input-panel-btn {
-    width: 50%;
-    height: 80%;
+    height: 100%;
 }
-.sync-video-panel {
+
+.sync-main-panel .sync-video-panel {
+    margin-top: 6px;
     text-align: center;
+}
+
+.sync-panel-1 {
+    flex: 1;
+}
+.sync-panel-2 {
+    flex: 2;
+}
+.sync-panel-container {
+    display: flex;
 }
