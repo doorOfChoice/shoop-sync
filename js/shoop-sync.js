@@ -231,6 +231,7 @@ function Sync() {
             }
         }
         conn.on('open', () => {
+            connOpenFunc(conn);
             conn.send({
                 type: "SYNC",
                 msg: peersGot(conns)

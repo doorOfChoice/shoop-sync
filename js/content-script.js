@@ -176,12 +176,35 @@
         //|                  注册peer事件                     |
         //|                 网络事件初始化                    |
         //====================================================**/
-        function initNetwork() {
-            function generateText(peer, content) {
+        function initNetworkAndEvent() {
+            function print(content, color) {
                 let div = $("<div></div>");
-                div.append(buildP(peer + " 说道:").css('color', 'blue')).append(buildP(content));
-                return div;
+                div.append(buildP(content));
+                if(color !== undefined) {
+                    div.css('color', color);
+                }
+                chat.append(div);
             }
+            function printText(content, peer) {
+                let div = $("<div></div>");
+                if(peer !== undefined) {
+                    div.append(buildP(peer + " 说道:").css('color', 'blue'))
+                }
+                div.append(buildP(dateFormat(new Date()) + ">").css('color', 'blue'));
+                div.append(buildP(content));
+                chat.append(div);
+            }
+
+
+            function printError(err) {
+                print(err, 'red');
+            }
+
+            function printSuccess(suc) {
+                print(suc, 'green');
+            }
+
+
 
             function dateFormat(date) {
                 return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay() + ' ' + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds();
@@ -198,27 +221,28 @@
             let vc = new VideoController();
 
             sync.setPeerOpenFunc(function (id) {
-                chat.text("your name is: " + id);
+                print('欢迎加入大家庭', 'purple');
+                print('你的peerid是: ' + id, 'purple');
             });
 
             sync.setPeerErrorFunc(function (err) {
-                chromeAlert("连接失败", '失败原因: ' + err.type);
+                printError('连接失败, 失败原因: ' + err.type);
             });
 
             sync.setPeerConnFunc(function (conn) {
-                chromeAlert('新的连接', conn.peer + '加入了你的房间');
+                printSuccess('新的连接' + conn.peer + '加入了你的房间');
             });
 
             sync.setConnDataFunc(function (conn, data) {
-                chat.append(generateText(data.peer, data.msg));
+                printText(data.msg, data.peer);
             });
 
             sync.setConnOpenFunc(function (conn) {
-                chromeAlert('连接状况', '和' + conn.peer + '连接成功');
+                printSuccess('连接状况: 和' + conn.peer + '连接成功');
             });
 
             sync.setConnCloseFunc(function (conn) {
-                chromeAlert('连接状况', conn.peer + '退出了你的房间');
+                printError('连接状况 ' + conn.peer + '退出了你的房间');
             });
 
             sync.setConnsChanged(function (conns) {
@@ -240,7 +264,7 @@
 
             inputBtn.click(function (event) {
                 sync.sendData(inputText.val());
-                chat.append(generateText(sync.peerId(), inputText.val()));
+                printText(inputText.val(), sync.peerId());
             });
 
             connBtn.click(function (event) {
@@ -277,7 +301,7 @@
 
             sync.init();
         }
-        initNetwork();
+        initNetworkAndEvent();
         return  {
             main: main,
             smallMain: smallMain
