@@ -9,7 +9,7 @@
      * 最后返回main面板（用户操作），和smallMain（缩小菜单）
      * @returns {{main: (*|jQuery), smallMain: (*|jQuery)}}
      */
-    function init() {
+    function initDoms() {
         /**
          * 返回可以拖动dom的事件函数
          * @param dom 被拖动的元素
@@ -108,7 +108,7 @@
         let smallMain = $("<div class='sync-small-main-panel'></div>").hide();
         smallMain.mousedown(dragFunction(smallMain));
 
-        let menu = $("<div class='sync-main-menu'><b>SHOOP</b></div>");
+        let menu = $("<div class='sync-main-menu'><b>Shoop</b></div>");
         //主面板
         let main = $("<div class='sync-main-panel'></div>").append(menu).hide();
         menu.mousedown(dragFunction(main));
@@ -308,6 +308,14 @@
         };
     }
 
+    function initAll() {
+        chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+            if(request.cmd === 'show') {
+                clickFilterURL();
+                clickReflection();
+            }
+        });
+    }
     /**
      * 控制doms的可见性
      * 先显示main，再显示smallMain，来回交替
@@ -321,16 +329,69 @@
         }
     }
 
-    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
-    {
-        if(request.cmd === 'show') {
-            if(!hasInit) {
-                hasInit = true;
-                doms = init();
-                toggleDomsVisibility();
-            }else if(doms != null){
-                toggleDomsVisibility();
-            }
+    function clickReflection() {
+        if(!hasInit) {
+            hasInit = true;
+            doms = initDoms();
+            toggleDomsVisibility();
+        }else if(doms != null){
+            toggleDomsVisibility();
         }
-    });
+
+    }
+
+    function clickFilterURL() {
+        let uri = window.location.href;
+        if(/https?:\/\/www.imomoe.net\/player\/.+/.test(uri)) {
+            window.location.href = $($('iframe')[1]).attr('src');
+            return true;
+        }else if(/https?:\/\/.*\.yn-dove.cn\/m?play\.php.+/.test(uri)) {
+            window.location.href = $('iframe').attr('src');
+            return true;
+        }
+
+        return false;
+    }
+
+    function autoFilterURL() {
+        let uri = window.location.href;
+        if(/https?:\/\/.*.aeidu\.cn\/index\.php.+/.test(uri)
+            || /https?:\/\/jx\.aeidu\.cn\/.+/.test(uri)
+            || /https?:\/\/vip\.jlsprh\.com\/.+/.test(uri)
+            || /https?:\/\/jx\.618ge\.com.+/.test(uri)
+        ) {
+            window.location.href = $('iframe').attr('src');
+            return true;
+        }
+
+        return false;
+    }
+
+    function autoOpenByURL() {
+        let uri = window.location.href;
+
+        if(/https?:\/\/api.jialingmm.net\/.+/.test(uri)
+            || /https?:\/\/vip.94kuyun.com\/.+/.test(uri)
+            || /http:\/\/api\.bbbbbb\.me\/.+/.test(uri)
+            || /https?:\/\/bobo\.kukucdn\.com\/.+/.test(uri)
+            || /https?:\/\/52dy\.hanju2017\.com\/.+/.test(uri)
+        ) {
+            initAll();
+            clickReflection();
+            return true;
+        }
+        return false;
+    }
+
+
+    //如果是特殊网页, 执行跳转
+    if(autoFilterURL()) return;
+
+    //如果是需要自动打开的网页，自动注册
+    if(autoOpenByURL()) return;
+    //正常网页，需要点击打开
+
+
+    initAll();
+
 })();

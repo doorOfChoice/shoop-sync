@@ -2,7 +2,7 @@
     "name": "shoop-sync",
     "manifest_version": 2,
     "version": "1.0.0",
-    "description": "sync your life",
+    "description": "在同步中分享乐趣",
     "icons" : {         
       "16"  : "icon.png",
       "48"  : "icon.png",
@@ -38,6 +38,5 @@
       "storage",
       "notifications",
       "webRequest"
-    ],
-    "omnibox" : {"keyword" : "dev"}
+    ]
   }

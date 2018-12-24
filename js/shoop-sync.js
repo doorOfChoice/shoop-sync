@@ -11,6 +11,7 @@ function VideoController() {
 
     function play() {
         let video = $("video");
+        console.log($('html'));
         for(let i = 0; i < video.length; i++)
             video[i].play();
 
@@ -111,35 +112,35 @@ function Sync() {
      */
     let connOperation = (data) => {};
 
-    this.setPeerOpenFunc = function (func) {
+    this.setPeerOpenFunc = func => {
         peerOpenFunc = func;
     };
 
-    this.setPeerErrorFunc = function(func){
+    this.setPeerErrorFunc =  func =>{
         peerErrorFunc = func;
     };
 
-    this.setPeerConnFunc = function (func) {
+    this.setPeerConnFunc =  func => {
         peerConnFunc = func;
     };
 
-    this.setConnOpenFunc = function (func) {
+    this.setConnOpenFunc =  func => {
         connOpenFunc = func;
     };
 
-    this.setConnCloseFunc = function (func) {
+    this.setConnCloseFunc =  func => {
         connCloseFunc = func;
     };
 
-    this.setConnDataFunc = function (func) {
+    this.setConnDataFunc =  func => {
         connDataFunc = func;
     };
 
-    this.setConnsChanged = function (func) {
+    this.setConnsChanged =  func => {
         connsChanged = func;
     };
 
-    this.setConnOperation = function (func) {
+    this.setConnOperation =  func => {
         connOperation = func;
     };
 
