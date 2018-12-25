@@ -11,7 +11,6 @@ function VideoController() {
 
     function play() {
         let video = $("video");
-        console.log($('html'));
         for(let i = 0; i < video.length; i++)
             video[i].play();
 

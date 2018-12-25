@@ -254,10 +254,6 @@
                 }else {
                     unreadHit.remove();
                 }
-                console.log('scrollTop: ' + main.scrollTop());
-                console.log('scrollHeight: ' + main[0].scrollHeight);
-                console.log('height: ' + main.height());
-                console.log('scroll-' + (main[0].scrollHeight - main.height()));
             });
 
             sync.setConnOpenFunc(function (conn) {
