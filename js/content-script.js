@@ -16,19 +16,19 @@
          * @returns {Function}
          */
         function dragFunction(dom) {
-            return function (event) {
+            return function (e) {
                 //获取鼠标按下的时候左侧偏移量和上侧偏移量
-                let old_left = event.pageX;//左侧偏移量
-                let old_top = event.pageY;//竖直偏移量
+                let old_left = e.pageX;//左侧偏移量
+                let old_top = e.pageY;//竖直偏移量
 
                 //获取鼠标的位置
                 let old_position_left = dom.position().left;
                 let old_position_top = dom.position().top;
 
                 //鼠标移动
-                $(document).mousemove(function (event) {
-                    let new_left = event.pageX;//新的鼠标左侧偏移量
-                    let new_top = event.pageY;//新的鼠标竖直方向上的偏移量
+                $(document).mousemove(function (e) {
+                    let new_left = e.pageX;//新的鼠标左侧偏移量
+                    let new_top = e.pageY;//新的鼠标竖直方向上的偏移量
 
                     //计算发生改变的偏移量是多少
                     let chang_x = new_left - old_left;
@@ -113,12 +113,12 @@
         let main = $("<div class='sync-main-panel'></div>").append(menu).hide();
         menu.mousedown(dragFunction(main));
 
-        smallMain.dblclick(function (event) {
+        smallMain.dblclick(function (e) {
             main.show(500);
             smallMain.hide(500);
             syncCoord(main, smallMain);
         });
-        menu.dblclick(function (event) {
+        menu.dblclick(function (e) {
             main.hide(500);
             smallMain.show(500);
             syncCoord(smallMain, main);
@@ -147,6 +147,7 @@
 
         //聊天面板
         let chat = $("<div class='sync-chat-panel'></div>");
+        let unreadHit = $('<p class="sync-chat-panel-hit">');
 
         //输入面板
         let input = $("<div class='sync-input-panel'></div>");
@@ -195,6 +196,13 @@
                 chat.append(div);
             }
 
+            function sendMessage(data) {
+                if(data.trim() !== '') {
+                    sync.sendData(data);
+                    inputText.val('');
+                    printText(data, sync.peerId());
+                }
+            }
 
             function printError(err) {
                 print(err, 'red');
@@ -203,8 +211,6 @@
             function printSuccess(suc) {
                 print(suc, 'green');
             }
-
-
 
             function dateFormat(date) {
                 return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDay() + ' ' + date.getHours() + ':' + date.getMinutes() + ":" + date.getSeconds();
@@ -235,6 +241,22 @@
 
             sync.setConnDataFunc(function (conn, data) {
                 printText(data.msg, data.peer);
+                //如果用户还没有滚动到底部，提示未读信息
+                if(chat.scrollTop() < chat[0].scrollHeight - chat.height()) {
+                    let toggleMsg = data.msg.length >= 10 ? data.msg.substring(0, 10) + '...' : data.msg;
+                    unreadHit.text('未读消息: ' + toggleMsg);
+                    unreadHit.click(function (e) {
+                        chat[0].scrollTop = chat[0].scrollHeight;
+                        unreadHit.remove();
+                    });
+                    chat.append(unreadHit);
+                }else {
+                    unreadHit.remove();
+                }
+                console.log('scrollTop: ' + main.scrollTop());
+                console.log('scrollHeight: ' + main[0].scrollHeight);
+                console.log('height: ' + main.height());
+                console.log('scroll-' + (main[0].scrollHeight - main.height()));
             });
 
             sync.setConnOpenFunc(function (conn) {
@@ -246,7 +268,6 @@
             });
 
             sync.setConnsChanged(function (conns) {
-                console.log(conns);
                 friends.html("");
                 conns.unshift(sync.peerId());
                 friends.append(buildTable(['在线用户(第一个是自己)'], conns));
@@ -262,46 +283,60 @@
                 }
             });
 
-            inputBtn.click(function (event) {
-                sync.sendData(inputText.val());
-                printText(inputText.val(), sync.peerId());
+            inputBtn.click(function (e) {
+               sendMessage(inputText.val());
             });
 
-            connBtn.click(function (event) {
+            inputText.keydown(function (e) {
+                let keyNum = window.event ? e.keyCode :e.which;
+                if(keyNum === 13) {
+                    sendMessage(inputText.val());
+                }
+            });
+
+            connBtn.click(function (e) {
                 sync.connect(connText.val());
             });
 
-            playBtn.click(function (event) {
+            playBtn.click(function (e) {
                 sync.sendOperation(vc.newData("play"));
                 vc.play();
             });
 
-            pauseBtn.click(function (event) {
+            pauseBtn.click(function (e) {
                 sync.sendOperation(vc.newData("pause"));
                 vc.pause();
             });
 
-            syncBtn.click(function (event) {
+            syncBtn.click(function (e) {
                 sync.sendOperation(vc.newData("setTime"));
             });
 
-            shiftL.click(function (event) {
+            shiftL.click(function (e) {
                 sync.sendOperation(vc.newData('setTime', -1));
                 vc.shiftTime(-1);
             });
 
-            shiftR.click(function (event) {
+            shiftR.click(function (e) {
                 sync.sendOperation(vc.newData('setTime', 1));
                 vc.shiftTime(1);
             });
 
-            clearBtn.click(function (event) {
+            clearBtn.click(function (e) {
                 chat.html('');
+            });
+            //滚动到底部然后消除提示
+            chat.scroll(function (e) {
+                if(chat.scrollTop() >= chat[0].scrollHeight - chat.height() - 10) {
+                    unreadHit.remove();
+                }
             });
 
             sync.init();
         }
+
         initNetworkAndEvent();
+
         return  {
             main: main,
             smallMain: smallMain

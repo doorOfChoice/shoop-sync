@@ -172,6 +172,14 @@
     border-right: 1px solid #E0E0E0;
 }
 
+.sync-chat-panel-hit {
+    position: absolute;
+    text-align: center;
+    bottom: 95px;
+    width: 330px;
+    background-color: rgba(100, 255, 0, 0.8);
+}
+
 .sync-input-panel {
     height: auto;
 }
