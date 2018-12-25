@@ -242,6 +242,8 @@ function Sync() {
         });
 
         conn.on('data', data => {
+            console.log("dot dot:");
+            console.log(data);
             if(data.type === 'DATA') {
                 connDataFunc(conn, data);
             }else if(data.type === 'SYNC') {
