@@ -110,6 +110,11 @@ function Sync() {
      * @param data
      */
     let connOperation = (data) => {};
+    /**
+     * 连接发生错误
+     * @param err
+     */
+    let connErrorFunc = (peer, err) => {};
 
     this.setPeerOpenFunc = func => {
         peerOpenFunc = func;
@@ -129,6 +134,10 @@ function Sync() {
 
     this.setConnCloseFunc =  func => {
         connCloseFunc = func;
+    };
+
+    this.setConnErrorFunc = func => {
+        connErrorFunc = func;
     };
 
     this.setConnDataFunc =  func => {
@@ -253,6 +262,10 @@ function Sync() {
             }else if(data.type === 'OPERATION') {
                 connOperation(data.msg);
             }
+        });
+
+        conn.on('error', err => {
+            connErrorFunc(conn.peer, err);
         });
 
         conn.on('close', () => {

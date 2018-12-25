@@ -270,6 +270,10 @@
                 friends.append(buildTable(['在线用户(第一个是自己)'], conns));
             });
 
+            sync.setConnErrorFunc(function (peer, err) {
+                console.error('shoop-sync  ' + peer + '发生了错误: ' + err);
+            });
+
             sync.setConnOperation(function (opt) {
                 if(opt.op === 'play') {
                     vc.play();
