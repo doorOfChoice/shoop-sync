@@ -201,6 +201,7 @@
                     sync.sendData(data);
                     inputText.val('');
                     printText(data, sync.peerId());
+                    chat[0].scrollTop = chat[0].scrollHeight;
                 }
             }
 
